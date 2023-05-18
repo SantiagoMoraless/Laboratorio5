@@ -1,74 +1,78 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "stack.h"
-
+ 
 struct _s_stack {
-    stack_elem *elems;      // Arreglo de elementos
-    unsigned int size;      // Cantidad de elementos en la pila
-    unsigned int capacity;  // Capacidad actual del arreglo elems
+    stack next;
+    stack_elem elem;
 };
 
-
-
 stack stack_empty(){
-    stack s = malloc(sizeof(struct _s_stack));
-    s->capacity = 1u;
-    s->elems = calloc(s->capacity,sizeof(stack_elem));
-    s->size = 0u;
-    return s;
+    stack ret = NULL;
+    return ret;
 }
 
-
 stack stack_push(stack s, stack_elem e){
-    s->size = s->size + 1;
-
-    if (s->size > s->capacity) {
-        s->elems = realloc(s->elems,sizeof(stack_elem)*s->capacity*2);
-        s->capacity *= 2;
-    }
-    s->elems[s->size-1] = e;
+    stack new = malloc(sizeof(struct _s_stack));
+    new->elem = e;
+    new->next = s;
+    s = new;
     return s;
 }
 
 
 stack stack_pop(stack s){
     assert(!stack_is_empty(s));
-    s->size = s->size-1;
+    stack p;
+    p = s;
+    s = s->next;
+    free(p);
     return s;
 }
 
-
 unsigned int stack_size(stack s){
-    return s->size;
+    stack p = s;
+    unsigned int cant = 0u;
+    while (p != NULL){
+        p = p->next;
+        cant++;
+    }
+    return cant;
 }
-
 
 stack_elem stack_top(stack s){
     assert(!stack_is_empty(s));
-    return s->elems[s->size-1];
+    return s->elem;
 }
 
 
 bool stack_is_empty(stack s){
-    return s->elems == 0;
+    return s == NULL;
 }
 
 
 stack_elem *stack_to_array(stack s){
-    stack_elem *arreglo = calloc(s->size, sizeof(stack_elem));
-    for(unsigned int i = 0; i < stack_size(s); ++i){
-        arreglo[i] = s->elems[i];
+    stack_elem *arreglo = NULL;
+    if(stack_size(s)>0){
+    size_t i = stack_size(s)-1;
+    arreglo = calloc(stack_size(s),sizeof(stack_elem));
+    stack p = s;
+    while(p != NULL){
+        arreglo[i] = p->elem;
+        i--;
+        p=p->next;
+    } 
     }
-
     return arreglo;
 }
 
 
 stack stack_destroy(stack s){
-    free(s->elems);
-    free(s);
-    s = NULL;
+    stack p;
+    while (s != NULL){
+        p = s;
+        s = s->next;
+        free(p);
+    }
     return s;
 }
-
-
